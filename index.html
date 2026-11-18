@@ -9,11 +9,13 @@
     <link rel="apple-touch-icon" href="/eddie/icons/apple-touch-icon.png" />
     <title>eddie</title>
   </head>
-  <body>
+  <body class="preload">
     <div id="app">
       <aside id="sidebar" class="sidebar"></aside>
-      <main id="editor"></main>
-      <div class="status" id="status" aria-live="off"></div>
+      <div class="workspace" id="workspace">
+        <main id="editor"></main>
+        <div class="status" id="status" aria-live="off"></div>
+      </div>
     </div>
     <script type="module" src="/src/main.ts"></script>
   </body>

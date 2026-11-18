@@ -111,6 +111,13 @@ registerShortcuts((action) => {
   else if (action === 'help') toggleHelp();
 });
 
+// Phones: while the list is open, a tap on the visible edge of the editor closes it
+document.querySelector('#workspace')!.addEventListener('click', () => {
+  if (!document.body.classList.contains('sidebar-hidden') && matchMedia('(max-width: 700px)').matches) {
+    sidebar.toggle();
+  }
+});
+
 // Save before the window closes or goes to the background
 addEventListener('pagehide', flush);
 document.addEventListener('visibilitychange', () => document.hidden && flush());
@@ -118,6 +125,8 @@ document.addEventListener('visibilitychange', () => document.hidden && flush());
 storage.requestPersistence();
 const { lastOpenDocId } = await storage.getSettings();
 await open((lastOpenDocId && (await storage.getDoc(lastOpenDocId))?.id) || (await mostRecentDocId()));
+
+requestAnimationFrame(() => requestAnimationFrame(() => document.body.classList.remove('preload')));
 
 if (import.meta.env.DEV) {
   Object.assign(window, { storage, editor, sidebar });

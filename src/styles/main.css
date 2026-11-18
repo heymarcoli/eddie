@@ -397,3 +397,103 @@ kbd {
   background: var(--bg);
   color: var(--text);
 }
+
+/* No slide-in while the saved layout is applied on load */
+.preload *,
+.preload *::before {
+  transition: none !important;
+  animation: none !important;
+}
+
+/* Workspace (editor + counter) */
+
+.workspace {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+}
+
+.collapsed-logo {
+  display: none;
+}
+
+/* Phones: the list sits under the editor, which slides aside with rounded corners */
+
+@media (max-width: 700px) {
+  :root {
+    --sidebar-mobile: 82vw;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: var(--sidebar-mobile);
+    margin-left: 0 !important;
+    border-right: 0;
+    font-size: 15px;
+    transition: none;
+  }
+
+  .workspace {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    transition:
+      transform 0.25s ease,
+      border-radius 0.25s ease;
+  }
+
+  body:not(.sidebar-hidden) .workspace {
+    transform: translateX(var(--sidebar-mobile));
+    border-radius: 16px;
+    outline: 1px solid var(--border);
+    overflow: hidden;
+    cursor: pointer;
+  }
+
+  body:not(.sidebar-hidden) .workspace > * {
+    pointer-events: none;
+  }
+
+  .sidebar-collapsed {
+    z-index: 3;
+    top: max(8px, env(safe-area-inset-top));
+  }
+
+  .collapsed-logo {
+    display: block;
+    width: 18px;
+    height: auto;
+    margin: 6px auto 10px;
+  }
+
+  #editor .cm-content {
+    padding: 56px 20px 40vh 52px;
+  }
+
+  .row-main {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  .row-more {
+    opacity: 1;
+  }
+
+  /* 16px keeps iOS from zooming in on focus */
+  .sidebar-search,
+  .row-input {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 700px) and (prefers-reduced-motion: reduce) {
+  .workspace {
+    transition: none;
+  }
+}

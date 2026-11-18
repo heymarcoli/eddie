@@ -34,6 +34,9 @@ const ICONS = {
 const icon = (name: keyof typeof ICONS) =>
   `<svg viewBox="0 0 24 24" aria-hidden="true" class="icon icon-${name}">${ICONS[name]}</svg>`;
 
+// On phones the list slides in under the editor and starts closed
+const mobile = matchMedia('(max-width: 700px)');
+
 const normalize = (s: string) => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
 const collator = new Intl.Collator('es', { numeric: true, sensitivity: 'base' });
 
@@ -55,7 +58,7 @@ export async function createSidebar(root: HTMLElement, handlers: SidebarHandlers
   let folders: Folder[] = [];
   let sortOrder = settings.sortOrder;
   let collapsed = new Set(settings.collapsedFolderIds);
-  let visible = settings.sidebarVisible;
+  let visible = mobile.matches ? false : settings.sidebarVisible;
   let query = '';
   let activeId: string | null = null;
   let editing = false;
@@ -85,7 +88,8 @@ export async function createSidebar(root: HTMLElement, handlers: SidebarHandlers
   const collapsedSearch = iconButton('search', 'Buscar');
   const collapsedNewDoc = iconButton('newDoc', 'Nuevo documento');
   const collapsedBar = el('div', { className: 'sidebar-collapsed' });
-  collapsedBar.append(showButton, collapsedNewDoc, collapsedSearch);
+  const mark = el('img', { src: `${import.meta.env.BASE_URL}eddie-e.png`, alt: 'eddie', className: 'collapsed-logo' });
+  collapsedBar.append(mark, showButton, collapsedNewDoc, collapsedSearch);
   root.after(collapsedBar);
 
   // Data
@@ -284,6 +288,7 @@ export async function createSidebar(root: HTMLElement, handlers: SidebarHandlers
       openMenu(target.closest('.row-more')!, id, kind);
     } else if (kind === 'doc') {
       handlers.open(id);
+      closeOnMobile();
     } else {
       collapsed.has(id) ? collapsed.delete(id) : collapsed.add(id);
       await storage.setSetting('collapsedFolderIds', [...collapsed]);
@@ -394,6 +399,11 @@ export async function createSidebar(root: HTMLElement, handlers: SidebarHandlers
   collapsedNewDoc.onclick = () => api.newDoc();
   collapsedSearch.onclick = () => api.openSearch();
 
+  /** On phones, picking a document reveals the editor again. */
+  function closeOnMobile() {
+    if (mobile.matches && visible) api.toggle();
+  }
+
   function applyVisibility() {
     document.body.classList.toggle('sidebar-hidden', !visible);
     root.inert = !visible;
@@ -412,6 +422,7 @@ export async function createSidebar(root: HTMLElement, handlers: SidebarHandlers
       closeSearch();
       await refresh();
       handlers.open(doc.id);
+      closeOnMobile();
     },
     async newFolder(parentId = null) {
       const folder = await storage.createFolder('Nueva carpeta', parentId);
@@ -428,7 +439,7 @@ export async function createSidebar(root: HTMLElement, handlers: SidebarHandlers
     },
     toggle() {
       visible = !visible;
-      storage.setSetting('sidebarVisible', visible);
+      if (!mobile.matches) storage.setSetting('sidebarVisible', visible);
       applyVisibility();
     },
   };
